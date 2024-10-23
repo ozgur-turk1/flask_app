@@ -1,0 +1,7 @@
+users.json
+uploads
+test
+__pycache__
+fusion pdf.code-workspace
+*.log
+.env

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusionner des PDF et Générer des QR Codes</title>
+    <style>
+        /* Style de la page et des boutons */
+        body {
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .form-file input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Style pour la liste des fichiers sélectionnés */
+        .file-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .file-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .file-list li span {
+            margin-right: 10px;
+            color: #333;
+        }
+
+        .file-list li button {
+            background-color: transparent;
+            border: none;
+            color: red;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="h3 mb-3 font-weight-normal">Fusionner des fichiers PDF</h1>
+        <form method="post" action="/fusion" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="files">Sélectionnez des fichiers PDF :</label>
+                <input type="file" id="file-input" name="files" multiple accept="application/pdf">
+            </div>
+
+            <!-- Afficher la liste des fichiers sélectionnés -->
+            <ul id="file-list" class="file-list"></ul>
+
+            <button class="btn" id="merge-btn" type="submit" disabled>Fusionner</button>
+        </form>
+    </div>
+
+    <script>
+        // Variables pour stocker les fichiers sélectionnés
+        let selectedFiles = [];
+
+        // Récupérer l'élément d'entrée de fichier, la liste d'affichage, et le bouton de fusion
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const mergeBtn = document.getElementById('merge-btn');
+
+        // Fonction pour afficher la liste des fichiers sélectionnés
+        function renderFileList() {
+            fileList.innerHTML = '';  // Effacer l'affichage précédent
+
+            selectedFiles.forEach((file, index) => {
+                const li = document.createElement('li');
+                const span = document.createElement('span');
+                span.textContent = file.name;  // Afficher le nom du fichier
+
+                const removeButton = document.createElement('button');
+                removeButton.textContent = '✖';  // La croix pour supprimer le fichier
+                removeButton.onclick = function () {
+                    removeFile(index);  // Supprimer le fichier sélectionné
+                };
+
+                li.appendChild(span);
+                li.appendChild(removeButton);
+                fileList.appendChild(li);
+            });
+
+            // Désactiver le bouton "Fusionner" s'il y a moins de 2 fichiers
+            mergeBtn.disabled = selectedFiles.length < 2;
+        }
+
+        // Fonction pour ajouter des fichiers à la liste sélectionnée
+        fileInput.addEventListener('change', function(event) {
+            const newFiles = Array.from(fileInput.files);
+
+            // Filtrer pour n'accepter que les fichiers PDF
+            newFiles.forEach(file => {
+                if (file.type === 'application/pdf') {
+                    selectedFiles.push(file);
+                } else {
+                    alert(`${file.name} n'est pas un fichier PDF valide.`);
+                }
+            });
+
+            renderFileList();  // Mettre à jour l'affichage
+        });
+
+        // Fonction pour supprimer un fichier sélectionné
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);  // Retirer le fichier de la liste
+            renderFileList();  // Mettre à jour l'affichage
+        }
+
+        // Ajout de fichiers lors de l'envoi du formulaire
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => {
+                dataTransfer.items.add(file);  // Ajouter les fichiers dans un nouvel objet DataTransfer
+            });
+
+            // Remplacer l'input files par ceux qui ont été sélectionnés
+            fileInput.files = dataTransfer.files;
+        });
+    </script>
+</body>
+</html>

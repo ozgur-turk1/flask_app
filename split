@@ -1,0 +1,33 @@
+# Programme qui separe un fichier pdf en plusieurs fichier avec le nombre de page voulu par l'utilisateur
+# TODO a ajouter a l'application flask
+
+import argparse
+import os
+from PyPDF2 import PdfReader, PdfWriter
+
+def split_pdf(input_pdf, num_pages_per_part):
+    input_dir = os.path.dirname(input_pdf)
+    input_filename = os.path.splitext(os.path.basename(input_pdf))[0]
+    
+    reader = PdfReader(input_pdf)
+    total_pages = len(reader.pages)
+    
+    for i in range(0, total_pages, num_pages_per_part):
+        writer = PdfWriter()
+        output_pdf = os.path.join(input_dir, f'{input_filename}_{i//num_pages_per_part + 1}.pdf')
+        
+        for j in range(i, min(i + num_pages_per_part, total_pages)):
+            writer.add_page(reader.pages[j])
+        
+        with open(output_pdf, 'wb') as output_file:
+            writer.write(output_file)
+        print(f"Created {output_pdf}")
+
+
+parser = argparse.ArgumentParser(description="Split a PDF into smaller parts.")
+parser.add_argument("input_pdf", help="Path to the input PDF file")
+parser.add_argument("num_pages", type=int, help="Number of pages per part")
+
+args = parser.parse_args()
+
+split_pdf(args.input_pdf, args.num_pages)
